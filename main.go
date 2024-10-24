@@ -32,32 +32,39 @@ func sortLinesSlice(lines []string) []string {
 func makeLinesSlice(name string) ([]string, error) {
 	fileBites, err := os.ReadFile(name)
 	if err != nil {
-		return []string{}, fmt.Errorf("ошибка чтения файла: %v", err)
+		return nil, fmt.Errorf("ошибка чтения файла: %w", err)
 	}
 	text := strings.ToUpper(string(fileBites))
 	text = strings.Replace(text, "\r", "", -1)
 	return strings.Split(text, "\n"), nil
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Println(errors.New(`передайте имя файла`))
-		return
-	}
-	name := os.Args[1]
+func writeResult(name string) error {
 	res, err := os.Create("result.txt")
 	if err != nil {
-		fmt.Println(fmt.Errorf("ошибка создания файла: %v", err))
-		return
+		return fmt.Errorf("ошибка создания файла: %w", err)
 	}
 	defer res.Close()
 	allLines, err := makeLinesSlice(name)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return fmt.Errorf("ошибка считывания строк: %w", err)
 	}
 	uniqLines := sortLinesSlice(allLines)
 	for i := range uniqLines {
 		res.WriteString(fmt.Sprintf("%s - %d байт\n", uniqLines[i], len(uniqLines[i])))
+	}
+	return nil
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Println(errors.New(`ошибка: не передано имя файла`))
+		return
+	}
+	name := os.Args[1]
+	err := writeResult(name)
+	if err != nil {
+		fmt.Println(fmt.Errorf("ошибка записи в файл: %w", err))
+		return
 	}
 }
