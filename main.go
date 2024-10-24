@@ -58,13 +58,11 @@ func writeResult(name string) error {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println(errors.New(`ошибка: не передано имя файла`))
-		return
+		panic(errors.New(`ошибка: не передано имя файла`))
 	}
 	name := os.Args[1]
 	err := writeResult(name)
 	if err != nil {
-		fmt.Println(fmt.Errorf("ошибка записи в файл: %w", err))
-		return
+		panic(fmt.Errorf("ошибка записи в файл: %w", err))
 	}
 }
