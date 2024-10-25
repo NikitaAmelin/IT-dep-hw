@@ -39,17 +39,12 @@ func makeLinesSlice(name string) ([]string, error) {
 	return strings.Split(text, "\n"), nil
 }
 
-func writeResult(name string) error {
-	res, err := os.Create("result.txt")
+func writeFile(name string, uniqLines []string) error {
+	res, err := os.Create(name)
 	if err != nil {
 		return fmt.Errorf("ошибка создания файла: %w", err)
 	}
 	defer res.Close()
-	allLines, err := makeLinesSlice(name)
-	if err != nil {
-		return fmt.Errorf("ошибка считывания строк: %w", err)
-	}
-	uniqLines := sortLinesSlice(allLines)
 	for i := range uniqLines {
 		res.WriteString(fmt.Sprintf("%s - %d байт\n", uniqLines[i], len(uniqLines[i])))
 	}
@@ -57,11 +52,16 @@ func writeResult(name string) error {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		panic(errors.New(`ошибка: не передано имя файла`))
+	if len(os.Args) < 3 {
+		panic(errors.New(`ошибка: переданы не все файлы (исходный файл, файл вывода)`))
 	}
-	name := os.Args[1]
-	err := writeResult(name)
+	input_file, output_file := os.Args[1], os.Args[2]
+	lines, err := makeLinesSlice(input_file)
+	if err != nil {
+		panic(fmt.Errorf(`ошибка при попытке считать строки: %w`, err))
+	}
+	uniqLines := sortLinesSlice(lines)
+	err = writeFile(output_file, uniqLines)
 	if err != nil {
 		panic(fmt.Errorf("ошибка записи в файл: %w", err))
 	}
